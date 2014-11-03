@@ -1,22 +1,21 @@
+// Author @dvdtoth
+
 window.onload=function(){
-	
+
 var color = 4; // default color
 var cols = 52; // number of columns
 var rows = 7; // number of rows
 var mouse = 0;
 
-colors = colorSelector();
-graph = clickableGrid(rows, cols);
-ops = operations();
-map = generateMap(rows);
-
-document.body.appendChild(colors);
-document.body.appendChild(graph);
-document.body.appendChild(ops);
-document.body.appendChild(map);
+document.body.appendChild(colorSelector());
+document.body.appendChild(clickableGrid());
+document.body.appendChild(operations()[0]);
+document.body.appendChild(operations()[1]);
+document.body.appendChild(blankMap());
+document.body.appendChild(textArea());
 document.body.onmouseup = function (e) {
-            mouse = 0
-        }
+    mouse = 0
+}
 
 // disable drag event for IE
 document.body.ondragstart = function (e) {
@@ -33,9 +32,7 @@ function mousedown(e) {
     if (evt.which) mouse = evt.which;
     else mouse = evt.button;
     // colorize pixel on mousedown event for TD element
-    if (this.tagName == 'TD' && mouse == 1)
-    //this.style.backgroundColor = color;
-    this.setAttribute('data-color', color);
+    if (this.tagName == 'TD' && mouse == 1) this.setAttribute('data-color', color);
 }
 
 function colorSelector() {
@@ -54,7 +51,7 @@ function colorSelector() {
     return colors;
 }
 
-function clickableGrid(rows, cols, callback) {
+function clickableGrid() {
     var i = 0;
     var grid = document.createElement('table');
     grid.className = 'grid';
@@ -75,11 +72,48 @@ function clickableGrid(rows, cols, callback) {
     return grid;
 }
 
-function operations() {
+function operations(button) {
     var downloadButton = document.createElement('button');
-    downloadButton.id = 'download';
+    downloadButton.id = 'downloadbutton';
     downloadButton.innerHTML = 'Generate map';
-    downloadButton.onclick = function() {
+    downloadButton.onclick = function () {
+        generateMap();
+    };
+    var commitsButton = document.createElement('button');
+    commitsButton.id = 'commitsbutton';
+    commitsButton.innerHTML = 'Generate commits';
+    commitsButton.onclick = function () {
+        generateMap();
+        generateCommits();
+    }
+    return [downloadButton, commitsButton];
+}
+
+function blankMap() {
+
+    // @TODO do this in a textarea
+    var map = document.createElement('div');
+    for (var r = 0; r < rows; ++r) {
+        var par = document.createElement('div');
+        par.id = "line" + (r + 1);
+        map.appendChild(par);
+    }
+    return map;
+}
+
+function textArea() {
+    var textarea = document.createElement("div");
+    var input = document.createElement("textarea");
+    input.name = "commits";
+    input.maxLength = "5000";
+    input.cols = "80";
+    input.rows = "10";
+    input.id = "commits";
+    textarea.appendChild(input); //appendChild
+    return textarea;
+}
+
+function generateMap() {
     var allTD = document.getElementsByTagName("td");
     var map = [];
     for (var e = 0; e < allTD.length; e++) {
@@ -89,17 +123,34 @@ function operations() {
         map[line] = map[line] + String(allTD[e].getAttribute("data-color"));
         document.getElementById('line' + line).innerHTML = map[line];
     }
-    };
-    return downloadButton;
 }
 
-function generateMap(rows) {
-        var map = document.createElement('div');
+function generateCommits() {
+    // loop vertically on weeks of the year
+    console.log(rows);
+    console.log(cols);
+    var d = 1
+    // @TODO add field for custom date
+    var date = new Date(2014, 11, 3);
+    var textarea = document.getElementById("commits");
+    textarea.value = 'touch random.txt; git add .\n'
+    for (var c = 0; c < cols; ++c) {
+        var week = c + 1;
         for (var r = 0; r < rows; ++r) {
-            var par = document.createElement('div');
-            par.id = "line" + (r+1);
-            map.appendChild(par);
-        }
-    return map;
-}
+            var color = document.getElementById('line' + (r + 1)).innerHTML[c];
+            if (color > 0) {
+                var printedDate = date.toISOString().substr(0, 11);
+                for (var cm = 0; cm < color; ++cm) {
+                    var timestamp = printedDate + ("0" + cm).slice(-2) + ':00';
+                    var command1 = Math.random().toString(36).substr(2, 16) + ' > random.txt';
+                    var command2 = 'GIT_AUTHOR_DATE=\'' + timestamp + '\' GIT_COMMITTER_DATE=\'' + timestamp + '\' git commit -am \'' + timestamp + '\'';
+                    console.log(document.getElementById("commits"));
+                    textarea.value = textarea.value + command1 + '\n';
+                    textarea.value = textarea.value + command2 + '\n';
+                }
+            }
+            date = new Date(date.setDate(date.getDate() + 1));
+        };
+    };
+}	
 }
