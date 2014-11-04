@@ -129,7 +129,9 @@ function generateCommits() {
     // loop vertically on weeks of the year, add commits where necessary
     var d = 1
     // @TODO add field for custom date
-    var date = new Date(2014, 11, 3);
+    now = new Date();
+    // Start at -1 year from now
+    var date = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
     var textarea = document.getElementById("commits");
     textarea.value = 'touch random.txt; git add .\n'
     for (var c = 0; c < cols; ++c) {
@@ -140,9 +142,8 @@ function generateCommits() {
                 var printedDate = date.toISOString().substr(0, 11);
                 for (var cm = 0; cm < color; ++cm) {
                     var timestamp = printedDate + ("0" + cm).slice(-2) + ':00';
-		    var command1 = 'echo \'' +  Math.random().toString(36).substr(2, 16) + '\' > random.txt';
+                    var command1 = 'echo \'' +  Math.random().toString(36).substr(2, 16) + '\' > random.txt';
                     var command2 = 'GIT_AUTHOR_DATE=\'' + timestamp + '\' GIT_COMMITTER_DATE=\'' + timestamp + '\' git commit -am \'' + timestamp + '\'';
-                    console.log(document.getElementById("commits"));
                     textarea.value = textarea.value + command1 + '\n';
                     textarea.value = textarea.value + command2 + '\n';
                 }
@@ -150,5 +151,5 @@ function generateCommits() {
             date = new Date(date.setDate(date.getDate() + 1));
         };
     };
-}	
+}
 }
